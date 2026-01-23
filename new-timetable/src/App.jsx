@@ -15,6 +15,8 @@ import {
   EyeOff,
   Settings,
 } from "lucide-react";
+import axios from "axios";
+import { useEffect } from "react";
 
 const shuffleArray = (array) => {
   const newArr = [...array];
@@ -49,8 +51,92 @@ const getShuffledSlotsForDay = (day, timeSlots, breaks, halfDays) => {
   return shuffleArray(slots);
 };
 
+const API = axios.create({
+  baseURL: "http://localhost:5000",
+});
+
 const TimetableGenerator = () => {
   // Authentication & User State
+  useEffect(() => {
+    const loadAll = async () => {
+      try {
+        const [
+          usersRes,
+          branchesRes,
+          subjectsRes,
+          teachersRes,
+          mappingsRes,
+          resourcesRes,
+          timetablesRes,
+        ] = await Promise.all([
+          API.get("/users"),
+          API.get("/branches"),
+          API.get("/subjects"),
+          API.get("/teachers"),
+          API.get("/mappings"),
+          API.get("/resources"),
+          API.get("/timetables?_sort=id&_order=desc&_limit=1"),
+        ]);
+
+        // Load users - filter to only individual user objects (not array objects)
+        if (Array.isArray(usersRes.data)) {
+          const validUsers = usersRes.data.filter(
+            (u) => u.id && typeof u.id === "number",
+          );
+          if (validUsers.length > 0) {
+            setUsers(validUsers);
+          }
+        }
+
+        // Load branches, subjects, teachers, mappings - ensure they're always arrays
+        if (Array.isArray(branchesRes.data)) setBranches(branchesRes.data);
+        else setBranches([]);
+        if (Array.isArray(subjectsRes.data)) setSubjects(subjectsRes.data);
+        else setSubjects([]);
+        if (Array.isArray(teachersRes.data)) setTeachers(teachersRes.data);
+        else setTeachers([]);
+        if (Array.isArray(mappingsRes.data))
+          setTeacherSubjectMapping(mappingsRes.data);
+        else setTeacherSubjectMapping([]);
+
+        // Load resources
+        if (resourcesRes.data && typeof resourcesRes.data === "object") {
+          setClassrooms(
+            Array.isArray(resourcesRes.data.classrooms)
+              ? resourcesRes.data.classrooms
+              : [],
+          );
+          setLabs(
+            Array.isArray(resourcesRes.data.labs) ? resourcesRes.data.labs : [],
+          );
+          setWorkingDays(
+            Array.isArray(resourcesRes.data.workingDays)
+              ? resourcesRes.data.workingDays
+              : [],
+          );
+          setTimeSlots(
+            Array.isArray(resourcesRes.data.timeSlots)
+              ? resourcesRes.data.timeSlots
+              : [],
+          );
+        }
+
+        // Load timetables
+        if (
+          Array.isArray(timetablesRes.data) &&
+          timetablesRes.data.length > 0
+        ) {
+          setGeneratedTimetable(timetablesRes.data[0].data);
+          setConstraintReport(timetablesRes.data[0].constraints);
+        }
+      } catch (err) {
+        console.warn("Failed to load from DB:", err.message);
+      }
+    };
+
+    loadAll();
+  }, []);
+
   const [currentUser, setCurrentUser] = useState({
     role: "",
     name: "",
@@ -148,6 +234,52 @@ const TimetableGenerator = () => {
   const [teacherSchedules, setTeacherSchedules] = useState(null);
   const [constraintReport, setConstraintReport] = useState(null);
   const [generationLog, setGenerationLog] = useState([]);
+
+  useEffect(() => {
+    API.put("/resources", {
+      classrooms,
+      labs,
+      workingDays,
+      timeSlots,
+    }).catch((err) => console.error("Failed to save resources:", err.message));
+  }, [classrooms, labs, workingDays, timeSlots]);
+
+  useEffect(() => {
+    API.put("/branches", branches).catch((err) =>
+      console.error("Failed to save branches:", err.message),
+    );
+  }, [branches]);
+
+  useEffect(() => {
+    API.put("/subjects", subjects).catch((err) =>
+      console.error("Failed to save subjects:", err.message),
+    );
+  }, [subjects]);
+
+  useEffect(() => {
+    API.put("/teachers", teachers).catch((err) =>
+      console.error("Failed to save teachers:", err.message),
+    );
+  }, [teachers]);
+
+  useEffect(() => {
+    API.put("/mappings", teacherSubjectMapping).catch((err) =>
+      console.error("Failed to save mappings:", err.message),
+    );
+  }, [teacherSubjectMapping]);
+
+  useEffect(() => {
+    // For users, only save non-default users to avoid losing defaults
+    const defaultUsernames = ["admin", "tto1", "teacher1", "student1"];
+    const usersToSave = users.filter(
+      (u) => !defaultUsernames.includes(u.username) || u.username === "admin",
+    );
+    if (usersToSave.length > 0) {
+      API.put("/users", users).catch((err) =>
+        console.error("Failed to save users:", err.message),
+      );
+    }
+  }, [users]);
 
   // ==================== IMPROVED TIMETABLE GENERATION LOGIC ====================
 
@@ -675,6 +807,16 @@ const TimetableGenerator = () => {
     addLog(
       `📊 ${violations.length} violations, ${satisfiedConstraints.length} constraints satisfied`,
     );
+    API.post("/timetables", {
+      timestamp: new Date(),
+      data: timetable,
+      constraints: {
+        violations,
+        satisfiedConstraints,
+        teacherWorkload,
+        assumptions,
+      },
+    });
   };
 
   // ==================== UI HELPER FUNCTIONS ====================
@@ -820,10 +962,10 @@ const TimetableGenerator = () => {
     const slots = [
       "09:00-10:00",
       "10:00-11:00",
-      "11:00-11:30",  // Short Break slot
+      "11:00-11:30", // Short Break slot
       "11:30-12:30",
       "12:30-13:30",
-      "13:30-14:30",  // Lunch Break slot
+      "13:30-14:30", // Lunch Break slot
       "14:30-15:30",
       "15:30-16:30",
     ];
@@ -877,7 +1019,7 @@ const TimetableGenerator = () => {
           background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
+          justifyContent: "flex-end",
           padding: "2rem",
           fontFamily:
             '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -2539,195 +2681,195 @@ const TimetableGenerator = () => {
               {(currentUser.role === "Admin" ||
                 currentUser.role === "TTO" ||
                 currentUser.role === "Student") && (
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "2rem",
-                    }}>
-                    {getViewableTimetables().map((branch) => {
-                      const branchTimetable = generatedTimetable[branch.id];
-                      if (!branchTimetable) return null;
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "2rem",
+                  }}>
+                  {getViewableTimetables().map((branch) => {
+                    const branchTimetable = generatedTimetable[branch.id];
+                    if (!branchTimetable) return null;
 
-                      return (
+                    return (
+                      <div
+                        key={branch.id}
+                        style={{
+                          background: "white",
+                          borderRadius: "12px",
+                          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                          overflow: "hidden",
+                        }}>
                         <div
-                          key={branch.id}
                           style={{
-                            background: "white",
-                            borderRadius: "12px",
-                            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                            overflow: "hidden",
+                            background:
+                              "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                            color: "white",
+                            padding: "1.5rem 2rem",
+                            display: "grid",
+                            gridTemplateColumns: "1fr auto 1fr",
+                            alignItems: "center",
+                            gap: "1rem",
                           }}>
-                          <div
-                            style={{
-                              background:
-                                "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                              color: "white",
-                              padding: "1.5rem 2rem",
-                              display: "grid",
-                              gridTemplateColumns: "1fr auto 1fr",
-                              alignItems: "center",
-                              gap: "1rem",
-                            }}>
-                            <div>
-                              <h3 style={{ margin: 0, fontSize: "1.125rem" }}>
-                                Class Timetable
-                              </h3>
-                              <p
-                                style={{
-                                  margin: "0.25rem 0 0 0",
-                                  fontSize: "0.875rem",
-                                  opacity: 0.9,
-                                }}>
-                                Academic Year 2024-25
-                              </p>
+                          <div>
+                            <h3 style={{ margin: 0, fontSize: "1.125rem" }}>
+                              Class Timetable
+                            </h3>
+                            <p
+                              style={{
+                                margin: "0.25rem 0 0 0",
+                                fontSize: "0.875rem",
+                                opacity: 0.9,
+                              }}>
+                              Academic Year 2024-25
+                            </p>
+                          </div>
+                          <div style={{ textAlign: "center" }}>
+                            <div
+                              style={{
+                                fontSize: "1.75rem",
+                                fontWeight: "700",
+                              }}>
+                              {branch.branch}
                             </div>
-                            <div style={{ textAlign: "center" }}>
-                              <div
-                                style={{
-                                  fontSize: "1.75rem",
-                                  fontWeight: "700",
-                                }}>
-                                {branch.branch}
-                              </div>
-                              <div style={{ fontSize: "0.875rem" }}>
-                                Section {branch.section}
-                              </div>
-                            </div>
-                            <div style={{ textAlign: "right" }}>
-                              <div
-                                style={{
-                                  fontSize: "0.875rem",
-                                  fontWeight: "600",
-                                }}>
-                                Semester {branch.semester}
-                              </div>
-                              <div style={{ fontSize: "0.75rem", opacity: 0.9 }}>
-                                {new Date().toLocaleDateString()}
-                              </div>
+                            <div style={{ fontSize: "0.875rem" }}>
+                              Section {branch.section}
                             </div>
                           </div>
-
-                          <div style={{ overflowX: "auto", padding: "1rem" }}>
-                            <table
+                          <div style={{ textAlign: "right" }}>
+                            <div
                               style={{
-                                width: "100%",
-                                borderCollapse: "collapse",
+                                fontSize: "0.875rem",
+                                fontWeight: "600",
                               }}>
-                              <thead>
-                                <tr
+                              Semester {branch.semester}
+                            </div>
+                            <div style={{ fontSize: "0.75rem", opacity: 0.9 }}>
+                              {new Date().toLocaleDateString()}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ overflowX: "auto", padding: "1rem" }}>
+                          <table
+                            style={{
+                              width: "100%",
+                              borderCollapse: "collapse",
+                            }}>
+                            <thead>
+                              <tr
+                                style={{
+                                  background: "#667eea",
+                                  color: "white",
+                                }}>
+                                <th
                                   style={{
-                                    background: "#667eea",
-                                    color: "white",
+                                    ...tableHeaderStyle,
+                                    border: "2px solid #5568d3",
                                   }}>
+                                  Day/Time
+                                </th>
+                                {timeSlots.map((slot, idx) => (
                                   <th
+                                    key={idx}
                                     style={{
                                       ...tableHeaderStyle,
                                       border: "2px solid #5568d3",
+                                      fontSize: "0.875rem",
                                     }}>
-                                    Day/Time
+                                    {slot.split("-")[0]}
                                   </th>
-                                  {timeSlots.map((slot, idx) => (
-                                    <th
-                                      key={idx}
-                                      style={{
-                                        ...tableHeaderStyle,
-                                        border: "2px solid #5568d3",
-                                        fontSize: "0.875rem",
-                                      }}>
-                                      {slot.split("-")[0]}
-                                    </th>
-                                  ))}
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {workingDays.map((day) => (
-                                  <tr key={day}>
-                                    <td
-                                      style={{
-                                        ...tableCellStyle,
-                                        border: "2px solid #9ca3af",
-                                        background: "#e0e7ff",
-                                        fontWeight: "700",
-                                        textAlign: "center",
-                                      }}>
-                                      {day}
-                                    </td>
-                                    {timeSlots.map((time) => {
-                                      const slotKey = `${day}-${time}`;
-                                      const entry = branchTimetable[slotKey];
-                                      const isBreak = isBreakTime(day, time);
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {workingDays.map((day) => (
+                                <tr key={day}>
+                                  <td
+                                    style={{
+                                      ...tableCellStyle,
+                                      border: "2px solid #9ca3af",
+                                      background: "#e0e7ff",
+                                      fontWeight: "700",
+                                      textAlign: "center",
+                                    }}>
+                                    {day}
+                                  </td>
+                                  {timeSlots.map((time) => {
+                                    const slotKey = `${day}-${time}`;
+                                    const entry = branchTimetable[slotKey];
+                                    const isBreak = isBreakTime(day, time);
 
-                                      return (
-                                        <td
-                                          key={slotKey}
-                                          style={{
-                                            ...tableCellStyle,
-                                            border: "2px solid #9ca3af",
-                                            background: isBreak
-                                              ? "#fef3c7"
-                                              : entry?.type === "Lab"
-                                                ? "#faf5ff"
-                                                : entry?.type === "Counseling"
-                                                  ? "#f0fdfa"
-                                                  : entry
-                                                    ? "#f0fdf4"
-                                                    : "#f9fafb",
-                                            textAlign: "center",
-                                            fontSize: "0.75rem",
-                                          }}>
-                                          {isBreak ? (
+                                    return (
+                                      <td
+                                        key={slotKey}
+                                        style={{
+                                          ...tableCellStyle,
+                                          border: "2px solid #9ca3af",
+                                          background: isBreak
+                                            ? "#fef3c7"
+                                            : entry?.type === "Lab"
+                                              ? "#faf5ff"
+                                              : entry?.type === "Counseling"
+                                                ? "#f0fdfa"
+                                                : entry
+                                                  ? "#f0fdf4"
+                                                  : "#f9fafb",
+                                          textAlign: "center",
+                                          fontSize: "0.75rem",
+                                        }}>
+                                        {isBreak ? (
+                                          <div
+                                            style={{
+                                              fontWeight: "700",
+                                              color: "#92400e",
+                                            }}>
+                                            BREAK
+                                          </div>
+                                        ) : entry ? (
+                                          <>
                                             <div
                                               style={{
                                                 fontWeight: "700",
-                                                color: "#92400e",
+                                                color: "#111827",
                                               }}>
-                                              BREAK
+                                              {entry.subject}
                                             </div>
-                                          ) : entry ? (
-                                            <>
+                                            {entry.room && (
                                               <div
                                                 style={{
-                                                  fontWeight: "700",
-                                                  color: "#111827",
+                                                  color: "#7c3aed",
+                                                  fontWeight: "600",
+                                                  marginTop: "0.25rem",
                                                 }}>
-                                                {entry.subject}
+                                                {entry.room}
                                               </div>
-                                              {entry.room && (
-                                                <div
-                                                  style={{
-                                                    color: "#7c3aed",
-                                                    fontWeight: "600",
-                                                    marginTop: "0.25rem",
-                                                  }}>
-                                                  {entry.room}
-                                                </div>
-                                              )}
-                                              {entry.blockPart && (
-                                                <div
-                                                  style={{
-                                                    color: "#4b5563",
-                                                    fontSize: "0.625rem",
-                                                    marginTop: "0.25rem",
-                                                  }}>
-                                                  {entry.blockPart}
-                                                </div>
-                                              )}
-                                            </>
-                                          ) : null}
-                                        </td>
-                                      );
-                                    })}
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
+                                            )}
+                                            {entry.blockPart && (
+                                              <div
+                                                style={{
+                                                  color: "#4b5563",
+                                                  fontSize: "0.625rem",
+                                                  marginTop: "0.25rem",
+                                                }}>
+                                                {entry.blockPart}
+                                              </div>
+                                            )}
+                                          </>
+                                        ) : null}
+                                      </td>
+                                    );
+                                  })}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
 
               {/* Teacher Schedules */}
               {canViewTeacherSchedule() && teacherSchedules && (
@@ -3154,6 +3296,7 @@ const ResourceBox = ({
             padding: "0.5rem 0.75rem",
             borderRadius: "8px",
             fontSize: "0.875rem",
+            color: "#000000",
             display: "flex",
             alignItems: "center",
             gap: "0.5rem",
@@ -3186,6 +3329,8 @@ const inputStyle = {
   borderRadius: "8px",
   fontSize: "0.9375rem",
   fontFamily: "inherit",
+  color: "#1a202c",
+  backgroundColor: "white",
 };
 
 const primaryButtonStyle = {

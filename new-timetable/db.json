@@ -1,0 +1,180 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "username": "admin",
+      "password": "admin123",
+      "name": "System Admin",
+      "role": "Admin"
+    },
+    {
+      "id": "2",
+      "username": "tto1",
+      "password": "tto123",
+      "name": "TTO Officer",
+      "role": "TTO"
+    },
+    {
+      "id": "3",
+      "username": "teacher1",
+      "password": "teacher123",
+      "name": "Dr. Kumar",
+      "role": "Teacher",
+      "teacherId": "T001"
+    },
+    {
+      "id": "4",
+      "username": "student1",
+      "password": "student123",
+      "name": "John Doe",
+      "role": "Student",
+      "assignedClass": "CS-A-SEM3"
+    }
+  ],
+  "branches": [],
+  "subjects": [],
+  "teachers": [],
+  "mappings": [],
+  "resources": {
+    "classrooms": [],
+    "labs": [],
+    "workingDays": [],
+    "timeSlots": []
+  },
+  "timetables": [
+    {
+      "id": "7c8b",
+      "timestamp": "2026-01-23T19:17:08.355Z",
+      "data": {
+        "cse-a-SEM3": {
+          "Monday-12:30-13:30": {
+            "subject": "dsa (Lab)",
+            "subjectId": "cs1",
+            "teacher": "rohan",
+            "teacherId": "t1",
+            "type": "Lab",
+            "room": "a",
+            "blockPart": "1/2"
+          },
+          "Monday-11:30-12:30": {
+            "subject": "dsa (Lab)",
+            "subjectId": "cs1",
+            "teacher": "rohan",
+            "teacherId": "t1",
+            "type": "Lab",
+            "room": "a",
+            "blockPart": "2/2"
+          },
+          "Friday-09:00-10:00": {
+            "subject": "dsa (Theory)",
+            "subjectId": "cs1",
+            "teacher": "rohan",
+            "teacherId": "t1",
+            "type": "Theory",
+            "room": "100"
+          },
+          "Tuesday-12:30-13:30": {
+            "subject": "dsa (Theory)",
+            "subjectId": "cs1",
+            "teacher": "rohan",
+            "teacherId": "t1",
+            "type": "Theory",
+            "room": "100"
+          },
+          "Thursday-12:30-13:30": {
+            "subject": "dsa (Theory)",
+            "subjectId": "cs1",
+            "teacher": "rohan",
+            "teacherId": "t1",
+            "type": "Theory",
+            "room": "100"
+          },
+          "Wednesday-15:30-16:30": {
+            "subject": "dsa (Theory)",
+            "subjectId": "cs1",
+            "teacher": "rohan",
+            "teacherId": "t1",
+            "type": "Theory",
+            "room": "100"
+          },
+          "Saturday-11:30-12:30": {
+            "subject": "dsa (Theory)",
+            "subjectId": "cs1",
+            "teacher": "rohan",
+            "teacherId": "t1",
+            "type": "Theory",
+            "room": "100"
+          },
+          "Wednesday-11:30-12:30": {
+            "subject": "os (Theory)",
+            "subjectId": "cs2",
+            "teacher": "divit",
+            "teacherId": "t2",
+            "type": "Theory",
+            "room": "100"
+          },
+          "Thursday-11:30-12:30": {
+            "subject": "os (Theory)",
+            "subjectId": "cs2",
+            "teacher": "divit",
+            "teacherId": "t2",
+            "type": "Theory",
+            "room": "100"
+          },
+          "Friday-12:30-13:30": {
+            "subject": "os (Theory)",
+            "subjectId": "cs2",
+            "teacher": "divit",
+            "teacherId": "t2",
+            "type": "Theory",
+            "room": "100"
+          },
+          "Monday-10:00-11:00": {
+            "subject": "os (Theory)",
+            "subjectId": "cs2",
+            "teacher": "divit",
+            "teacherId": "t2",
+            "type": "Theory",
+            "room": "100"
+          },
+          "Tuesday-15:30-16:30": {
+            "subject": "os (Theory)",
+            "subjectId": "cs2",
+            "teacher": "divit",
+            "teacherId": "t2",
+            "type": "Theory",
+            "room": "100"
+          },
+          "Saturday-12:30-13:30": {
+            "subject": "os (Theory)",
+            "subjectId": "cs2",
+            "teacher": "divit",
+            "teacherId": "t2",
+            "type": "Theory",
+            "room": "100"
+          }
+        }
+      },
+      "constraints": {
+        "violations": [
+          "dsa theory: scheduled 5/8 hours in cse-a-SEM3",
+          "os theory: scheduled 6/10 hours in cse-a-SEM3"
+        ],
+        "satisfiedConstraints": [
+          "dsa lab: all 2 hours scheduled in cse-a-SEM3",
+          "rohan: 7/10 hours (within limit)",
+          "divit: 6/10 hours (within limit)",
+          "✓ All labs placed in 2-hour continuous blocks",
+          "✓ Continuous subjects placed in designated block sizes",
+          "✓ No teacher double-booking detected",
+          "✓ Daily workload balanced across days"
+        ],
+        "teacherWorkload": {
+          "t1": 7,
+          "t2": 6
+        },
+        "assumptions": []
+      }
+    }
+  ]
+}
