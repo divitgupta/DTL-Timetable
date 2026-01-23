@@ -820,8 +820,10 @@ const TimetableGenerator = () => {
     const slots = [
       "09:00-10:00",
       "10:00-11:00",
+      "11:00-11:30",  // Short Break slot
       "11:30-12:30",
       "12:30-13:30",
+      "13:30-14:30",  // Lunch Break slot
       "14:30-15:30",
       "15:30-16:30",
     ];
@@ -2537,195 +2539,195 @@ const TimetableGenerator = () => {
               {(currentUser.role === "Admin" ||
                 currentUser.role === "TTO" ||
                 currentUser.role === "Student") && (
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "2rem",
-                  }}>
-                  {getViewableTimetables().map((branch) => {
-                    const branchTimetable = generatedTimetable[branch.id];
-                    if (!branchTimetable) return null;
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "2rem",
+                    }}>
+                    {getViewableTimetables().map((branch) => {
+                      const branchTimetable = generatedTimetable[branch.id];
+                      if (!branchTimetable) return null;
 
-                    return (
-                      <div
-                        key={branch.id}
-                        style={{
-                          background: "white",
-                          borderRadius: "12px",
-                          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                          overflow: "hidden",
-                        }}>
+                      return (
                         <div
+                          key={branch.id}
                           style={{
-                            background:
-                              "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                            color: "white",
-                            padding: "1.5rem 2rem",
-                            display: "grid",
-                            gridTemplateColumns: "1fr auto 1fr",
-                            alignItems: "center",
-                            gap: "1rem",
+                            background: "white",
+                            borderRadius: "12px",
+                            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                            overflow: "hidden",
                           }}>
-                          <div>
-                            <h3 style={{ margin: 0, fontSize: "1.125rem" }}>
-                              Class Timetable
-                            </h3>
-                            <p
-                              style={{
-                                margin: "0.25rem 0 0 0",
-                                fontSize: "0.875rem",
-                                opacity: 0.9,
-                              }}>
-                              Academic Year 2024-25
-                            </p>
-                          </div>
-                          <div style={{ textAlign: "center" }}>
-                            <div
-                              style={{
-                                fontSize: "1.75rem",
-                                fontWeight: "700",
-                              }}>
-                              {branch.branch}
-                            </div>
-                            <div style={{ fontSize: "0.875rem" }}>
-                              Section {branch.section}
-                            </div>
-                          </div>
-                          <div style={{ textAlign: "right" }}>
-                            <div
-                              style={{
-                                fontSize: "0.875rem",
-                                fontWeight: "600",
-                              }}>
-                              Semester {branch.semester}
-                            </div>
-                            <div style={{ fontSize: "0.75rem", opacity: 0.9 }}>
-                              {new Date().toLocaleDateString()}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div style={{ overflowX: "auto", padding: "1rem" }}>
-                          <table
+                          <div
                             style={{
-                              width: "100%",
-                              borderCollapse: "collapse",
+                              background:
+                                "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                              color: "white",
+                              padding: "1.5rem 2rem",
+                              display: "grid",
+                              gridTemplateColumns: "1fr auto 1fr",
+                              alignItems: "center",
+                              gap: "1rem",
                             }}>
-                            <thead>
-                              <tr
+                            <div>
+                              <h3 style={{ margin: 0, fontSize: "1.125rem" }}>
+                                Class Timetable
+                              </h3>
+                              <p
                                 style={{
-                                  background: "#667eea",
-                                  color: "white",
+                                  margin: "0.25rem 0 0 0",
+                                  fontSize: "0.875rem",
+                                  opacity: 0.9,
                                 }}>
-                                <th
+                                Academic Year 2024-25
+                              </p>
+                            </div>
+                            <div style={{ textAlign: "center" }}>
+                              <div
+                                style={{
+                                  fontSize: "1.75rem",
+                                  fontWeight: "700",
+                                }}>
+                                {branch.branch}
+                              </div>
+                              <div style={{ fontSize: "0.875rem" }}>
+                                Section {branch.section}
+                              </div>
+                            </div>
+                            <div style={{ textAlign: "right" }}>
+                              <div
+                                style={{
+                                  fontSize: "0.875rem",
+                                  fontWeight: "600",
+                                }}>
+                                Semester {branch.semester}
+                              </div>
+                              <div style={{ fontSize: "0.75rem", opacity: 0.9 }}>
+                                {new Date().toLocaleDateString()}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div style={{ overflowX: "auto", padding: "1rem" }}>
+                            <table
+                              style={{
+                                width: "100%",
+                                borderCollapse: "collapse",
+                              }}>
+                              <thead>
+                                <tr
                                   style={{
-                                    ...tableHeaderStyle,
-                                    border: "2px solid #5568d3",
+                                    background: "#667eea",
+                                    color: "white",
                                   }}>
-                                  Day/Time
-                                </th>
-                                {timeSlots.map((slot, idx) => (
                                   <th
-                                    key={idx}
                                     style={{
                                       ...tableHeaderStyle,
                                       border: "2px solid #5568d3",
-                                      fontSize: "0.875rem",
                                     }}>
-                                    {slot.split("-")[0]}
+                                    Day/Time
                                   </th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {workingDays.map((day) => (
-                                <tr key={day}>
-                                  <td
-                                    style={{
-                                      ...tableCellStyle,
-                                      border: "2px solid #9ca3af",
-                                      background: "#e0e7ff",
-                                      fontWeight: "700",
-                                      textAlign: "center",
-                                    }}>
-                                    {day}
-                                  </td>
-                                  {timeSlots.map((time) => {
-                                    const slotKey = `${day}-${time}`;
-                                    const entry = branchTimetable[slotKey];
-                                    const isBreak = isBreakTime(day, time);
+                                  {timeSlots.map((slot, idx) => (
+                                    <th
+                                      key={idx}
+                                      style={{
+                                        ...tableHeaderStyle,
+                                        border: "2px solid #5568d3",
+                                        fontSize: "0.875rem",
+                                      }}>
+                                      {slot.split("-")[0]}
+                                    </th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {workingDays.map((day) => (
+                                  <tr key={day}>
+                                    <td
+                                      style={{
+                                        ...tableCellStyle,
+                                        border: "2px solid #9ca3af",
+                                        background: "#e0e7ff",
+                                        fontWeight: "700",
+                                        textAlign: "center",
+                                      }}>
+                                      {day}
+                                    </td>
+                                    {timeSlots.map((time) => {
+                                      const slotKey = `${day}-${time}`;
+                                      const entry = branchTimetable[slotKey];
+                                      const isBreak = isBreakTime(day, time);
 
-                                    return (
-                                      <td
-                                        key={slotKey}
-                                        style={{
-                                          ...tableCellStyle,
-                                          border: "2px solid #9ca3af",
-                                          background: isBreak
-                                            ? "#fef3c7"
-                                            : entry?.type === "Lab"
-                                              ? "#faf5ff"
-                                              : entry?.type === "Counseling"
-                                                ? "#f0fdfa"
-                                                : entry
-                                                  ? "#f0fdf4"
-                                                  : "#f9fafb",
-                                          textAlign: "center",
-                                          fontSize: "0.75rem",
-                                        }}>
-                                        {isBreak ? (
-                                          <div
-                                            style={{
-                                              fontWeight: "700",
-                                              color: "#92400e",
-                                            }}>
-                                            BREAK
-                                          </div>
-                                        ) : entry ? (
-                                          <>
+                                      return (
+                                        <td
+                                          key={slotKey}
+                                          style={{
+                                            ...tableCellStyle,
+                                            border: "2px solid #9ca3af",
+                                            background: isBreak
+                                              ? "#fef3c7"
+                                              : entry?.type === "Lab"
+                                                ? "#faf5ff"
+                                                : entry?.type === "Counseling"
+                                                  ? "#f0fdfa"
+                                                  : entry
+                                                    ? "#f0fdf4"
+                                                    : "#f9fafb",
+                                            textAlign: "center",
+                                            fontSize: "0.75rem",
+                                          }}>
+                                          {isBreak ? (
                                             <div
                                               style={{
                                                 fontWeight: "700",
-                                                color: "#111827",
+                                                color: "#92400e",
                                               }}>
-                                              {entry.subject}
+                                              BREAK
                                             </div>
-                                            {entry.room && (
+                                          ) : entry ? (
+                                            <>
                                               <div
                                                 style={{
-                                                  color: "#7c3aed",
-                                                  fontWeight: "600",
-                                                  marginTop: "0.25rem",
+                                                  fontWeight: "700",
+                                                  color: "#111827",
                                                 }}>
-                                                {entry.room}
+                                                {entry.subject}
                                               </div>
-                                            )}
-                                            {entry.blockPart && (
-                                              <div
-                                                style={{
-                                                  color: "#4b5563",
-                                                  fontSize: "0.625rem",
-                                                  marginTop: "0.25rem",
-                                                }}>
-                                                {entry.blockPart}
-                                              </div>
-                                            )}
-                                          </>
-                                        ) : null}
-                                      </td>
-                                    );
-                                  })}
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                                              {entry.room && (
+                                                <div
+                                                  style={{
+                                                    color: "#7c3aed",
+                                                    fontWeight: "600",
+                                                    marginTop: "0.25rem",
+                                                  }}>
+                                                  {entry.room}
+                                                </div>
+                                              )}
+                                              {entry.blockPart && (
+                                                <div
+                                                  style={{
+                                                    color: "#4b5563",
+                                                    fontSize: "0.625rem",
+                                                    marginTop: "0.25rem",
+                                                  }}>
+                                                  {entry.blockPart}
+                                                </div>
+                                              )}
+                                            </>
+                                          ) : null}
+                                        </td>
+                                      );
+                                    })}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+                      );
+                    })}
+                  </div>
+                )}
 
               {/* Teacher Schedules */}
               {canViewTeacherSchedule() && teacherSchedules && (
