@@ -1,11 +1,11 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color-scheme: dark;
+  color: #e0e0e0;
+  background-color: #0f172a;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -13,26 +13,23 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
+  padding: 0;
   min-width: 320px;
   min-height: 100vh;
+  width: 100%;
+}
+
+#root {
+  width: 100%;
+  margin: 0 auto;
 }
 
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
+  color: #ffffff;
 }
 
 button {
@@ -42,27 +39,62 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #1a202c;
+  color: #e0e0e0;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: all 0.25s;
 }
+
 button:hover {
-  border-color: #646cff;
+  border-color: #6366f1;
+  background-color: #e2e8f0;
 }
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+/* Professional Timetable Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
   }
-  a:hover {
-    color: #747bff;
+
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #ffffff !important;
   }
-  button {
-    background-color: #f9f9f9;
+
+  .professional-timetable-container {
+    width: 100%;
+  }
+
+  .timetable-page {
+    width: 100%;
+    max-width: none;
+    page-break-after: always;
+    border: 2px solid #000;
+  }
+
+  table {
+    page-break-inside: avoid;
+  }
+
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+}
+
+/* Responsive Enhancements */
+@media (max-width: 768px) {
+  .professional-timetable-container table {
+    font-size: 0.65rem;
+  }
+
+  .timetable-page {
+    overflow-x: auto;
   }
 }
